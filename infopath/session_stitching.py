@@ -7,7 +7,7 @@ import copy
 def build_network(
     rsnn,
     datapath,
-    area_list=["wS1", "wS2", "wM1", "wM2", "ALM", "tjM1"],
+    area_list=["ALM", "AC"],
     with_video=True,
     hidden_propability=0.0,
 ):
@@ -72,11 +72,13 @@ def build_network(
         area_id = rsnn.area_index[i]
         area = area_list[area_id]
         cur_session = sess_exc[area_id] if exc else sess_inh[area_id]
+
         possible_ids = clusterdf[
             (clusterdf["area"] == area)
             & (clusterdf["excitatory"] == exc)
             & (clusterdf["session"] == cur_session[0])
         ]
+
         # making sure that we use all neurons from a session and then move to the next session
         while possible_ids.shape[0] == 0 and area != "Nope":
             cur_session = cur_session[1:]
@@ -117,3 +119,4 @@ def build_network(
             areas[i] = clusterdf.area[clusterdf.index == index].values[0]
             clusterdf = clusterdf[clusterdf.index != index]
     return neuron_index, firing_rate, session, areas
+

@@ -1,6 +1,7 @@
 from infopath.session_stitching import build_network
 from models.pop_rsnn import PopRSNN
 from datasets.prepare_input import InputSpikes
+from datasets.prepare_input import InputSpikes_Adapted
 import numpy as np
 import torch.nn as nn
 import torch
@@ -20,10 +21,12 @@ class FullModel(nn.Module):
         self.opt = opt
         self.num_areas = opt.num_areas
         self.rsnn = init_rsnn(opt)
-        self.input_spikes = InputSpikes(opt)
+        #self.input_spikes = InputSpikes(opt)
+        self.input_spikes = InputSpikes_Adapted(opt)
         start, stop = self.opt.start, self.opt.stop
         self.opt.start, self.opt.stop = 0.0, 0.1
-        self.input_spikes_pre = InputSpikes(copy.deepcopy(opt))
+        #self.input_spikes_pre = InputSpikes(copy.deepcopy(opt))
+        self.input_spikes_pre = InputSpikes_Adapted(copy.deepcopy(opt))
         self.opt.start, self.opt.stop = start, stop
         self.timestep = self.opt.dt * 0.001
         self.trial_onset = -int(self.opt.start / self.timestep)
@@ -710,3 +713,4 @@ def seed(seed=1810):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+

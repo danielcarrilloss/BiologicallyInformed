@@ -82,17 +82,19 @@ def log(x):
 def get_default_opt():
     input_parameters = {
         # duration of stimulus in seconds
-        "stim_duration": 0.01,
+        "stim_duration": 2,
         # Frequency in Hz of the input neurons
         "input_f0": 2.0,
         # Number of inputs to the RNNs
-        "n_rnn_in": 128,
+        "n_rnn_in": 600,      # Before 128
         # function to scale differnt stim amplitudes, it can be {'sigmoid', 'linear', 'log'}
         "scale_fun": "log",
         # valance of the stimulus, multiplier of scale_fun
         "stim_valance": 11.5,
         # delay from input to rnn in seconds
         "thalamic_delay": 0.005,
+        # decay velocity
+        "tau_sound_decay": 0.5,
     }
     optimizer_parameters = {
         # learning rate
@@ -118,7 +120,8 @@ def get_default_opt():
         # timeconstant of adaptative threshold in ms
         "tau_adaptation": 144.0,
         # name of areas
-        "areas": ["wS1", "mPFC", "tjM1"],
+        #"areas": ["wS1", "mPFC", "tjM1"],
+        "areas": ["ALM", "AC"],
         # smallest synaptic delay
         "n_delay": 5,
         # longest synaptic delay
@@ -155,7 +158,7 @@ def get_default_opt():
         "train_adaptation": False,
         "train_delays": False,
         # proportion of excitatory neurons
-        "p_exc": 0.85,
+        "p_exc": 0.9,
         # temperature for sigmoid in bernoulli spike function
         "temperature": 7.5,
         # if to use the MLP trial offset (this the one described in the paper)
@@ -171,7 +174,7 @@ def get_default_opt():
         # if to scale the jaw/tongue in the model
         "scaling_jaw_in_model": False,
         # percentage of exc neurons in input neurons
-        "p_exc_in": 0.8,
+        "p_exc_in": 0.85,
         # what is the initial v_{rest} values
         "v_rest": 0,
         # what is the initial threshold values
@@ -240,6 +243,7 @@ def get_default_opt():
     general_parameters = {
         # directory of the dataset
         "datapath": "./datasets",
+        #"datapath": "./pierre/data",
         # Device to use {either cpu or cuda:0}
         "device": "cuda:0" if torch.cuda.is_available() else "cpu",
         # gauss std for filtering spikes beforer loss calculation in ms
@@ -265,7 +269,8 @@ def get_default_opt():
         # Onset of trial in seconds
         "trial_onset": 1.0,
         # what are the stimuli onsets in seconds
-        "stim_onsets": [0, 1],
+        #"stim_onsets": [0, 1],
+        "stim_onsets": [0.0],
         # Timestep of simulation in ms
         "dt": 1.0,
         # more readable way to set stim
@@ -336,7 +341,7 @@ def config_pseudodata():
     opt.thalamic_delay = 0.004  # * (opt.lsnn_version != "srm")
     opt.tau_list = [10 for i in range(opt.num_areas)]
     opt.exc_inh_tau_mem_ratio = 3.0
-    opt.stim_onsets = [0]
+    opt.stim_onsets = [0.0]
 
     opt.restrict_inter_area_inh = True
     opt.dt = 4
@@ -396,13 +401,15 @@ def config_pseudodata():
 # # Vahid
 def config_vahid():
     opt = get_default_opt()
-    opt.datapath = "./datasets/DataFromVahid_expert"
-    opt.areas = ["wS1", "wS2", "wM1", "wM2", "ALM", "tjM1"]
+    #opt.datapath = "./datasets/DataFromVahid_expert"
+    opt.datapath = "./datasets/Pierre"
+    #opt.areas = ["wS1", "wS2", "wM1", "wM2", "ALM", "tjM1"]
+    opt.areas = ["ALM", "AC"]
     opt.num_areas = len(opt.areas)
     opt.stim = [0, 1]
-    opt.n_units = 750
-    opt.n_rnn_in = 2
-    opt.start, opt.stop = -0.2, 1.2
+    opt.n_units = 1500      # 750 per area
+    opt.n_rnn_in = 600
+    opt.start, opt.stop = -0.5, 6.5
     opt.noise_level_list = [0.10 for i in range(len(opt.areas))]
 
     opt.prop_adaptive = 0.0
@@ -447,7 +454,7 @@ def config_vahid():
     opt.trial_loss_area_specific = True
     opt.geometric_loss = True
 
-    opt.motor_areas = [4, 5]
+    opt.motor_areas = [0]    # LOOK AGAIN AT THIS
     opt.jaw_delay = 40
     opt.jaw_min_delay = 12
     opt.tau_jaw = 50
@@ -456,9 +463,10 @@ def config_vahid():
     opt.gan_loss = False
     opt.gan_hidden_neurons = 128
     opt.latent_new = False
-    opt.with_behaviour = True
+    # opt.with_behaviour = True
+    opt.with_behaviour = False
     # opt.device = "cpu"
-    opt.reaction_time_limits = [-1, 0.3]
+    #opt.reaction_time_limits = [-1, 0.3]
     opt.with_task_splitter = True
     opt.z_score = True
     opt.jaw_open_loop = True
@@ -497,6 +505,7 @@ if __name__ == "__main__":
 
     default = get_default_opt()
     opt = copy.copy(default)
-    # opt = config_vahid()
-    opt = config_pseudodata()
+    opt = config_vahid()
+    # opt = config_pseudodata()
     save_opt(config_path, opt)
+

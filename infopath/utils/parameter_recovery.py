@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 
 def generate_and_save_data(
     save_path="datasets/ModelData",
-    log_path="log_dir/a2c6ad1709e4cdb13e66119cc295059401535b3b/2024_1_16_6_56_5_chain/",
+    log_path="log_dir/a2c6ad1709e4cdb13e66119cc295059401535b3b/2024_1_16_6_56_5",
     trials=400,
     area_readout=1,
-    session_name="PS000_20220404",
+    session_name="TS095_20171003",
     save=True,
     seed=0,
     last_best="last",
@@ -32,7 +32,17 @@ def generate_and_save_data(
     stims = torch.ones(trials) * 4
     torch.manual_seed(seed)
     with torch.no_grad():
-        spikes, _, _, _ = model(stims)
+        # --- BATCHED GENERATION TO PREVENT OOM ---
+        batch_size = 200
+        spikes_list = []
+        for i in range(0, trials, batch_size):
+            batch_stims = stims[i:i+batch_size]
+            b_spikes, _, _, _ = model(batch_stims)
+            spikes_list.append(b_spikes)
+
+        spikes = torch.cat(spikes_list, dim=1)
+        # -----------------------------------------
+
     if "Mechanism" in save_path or "GoNoGo" in save_path:
         a = 8 * model.timestep
         filt = model.filter_fun2(model.filter_fun1(spikes))
@@ -68,7 +78,7 @@ def generate_and_save_data(
         df_entry["video_onset"] = [2]
         df_entry["video_offset"] = [0]
         trial_df = pd.concat([trial_df, df_entry], ignore_index=True)
-    area_dict = {0: "area1", 1: "area2", 2: "area3"}
+    area_dict = {i: area_name for i, area_name in enumerate(opt.areas)}
     if save:
         trial_df.to_csv(os.path.join(save_path, session_name, "trial_info"))
         neuron_df = pd.DataFrame(
@@ -122,59 +132,13 @@ def generate_and_save_data(
         neuron_df = neuron_df.reset_index(drop=True)
         neuron_df.to_csv(os.path.join(save_path, "cluster_information"))
 
-
-generate_and_save_data(
-    "datasets/GoNoGo_nofb_seed0",
-    "AllModels/1d74764c4551eef5158418ea67fbe1a5885dfdb1/2024_5_27_9_46_33_teacher_conf_block",
-    area_readout=1,
-    save=True,
-    seed=0,
-    trials=2000,
-    last_best="best",
-)
-generate_and_save_data(
-    "datasets/GoNoGo_withfb1_seed0",
-    "AllModels/1d74764c4551eef5158418ea67fbe1a5885dfdb1/2024_5_27_9_46_33_teacher_conf",
-    area_readout=1,
-    save=True,
-    seed=0,
-    trials=2000,
-    last_best="best",
-)
-generate_and_save_data(
-    "datasets/GoNoGo_nofb_seed1",
-    "AllModels/1d74764c4551eef5158418ea67fbe1a5885dfdb1/2024_5_27_9_46_33_teacher_conf_block",
-    area_readout=1,
-    save=True,
-    seed=1,
-    trials=2000,
-    last_best="best",
-)
-
-generate_and_save_data(
-    "datasets/GoNoGo_withfb1_seed1",
-    "AllModels/1d74764c4551eef5158418ea67fbe1a5885dfdb1/2024_5_27_9_46_33_teacher_conf",
-    area_readout=1,
-    save=True,
-    seed=1,
-    trials=2000,
-    last_best="best",
-)
-generate_and_save_data(
-    "datasets/GoNoGo_nofb_seed2",
-    "AllModels/1d74764c4551eef5158418ea67fbe1a5885dfdb1/2024_5_27_9_46_33_teacher_conf_block",
-    area_readout=1,
-    save=True,
-    seed=2,
-    trials=2000,
-    last_best="best",
-)
-generate_and_save_data(
-    "datasets/GoNoGo_withfb1_seed2",
-    "AllModels/1d74764c4551eef5158418ea67fbe1a5885dfdb1/2024_5_27_9_46_33_teacher_conf",
-    area_readout=1,
-    save=True,
-    seed=2,
-    trials=2000,
-    last_best="best",
-)
+if __name__ == "__main__":
+    generate_and_save_data(
+        "datasets/Real_teacher_data",
+        "log_dir/main/2026_6_5_6_21_35_full",
+        area_readout=1,
+        save=True,
+        seed=1,
+        trials=2000,
+        last_best="best",
+    )
