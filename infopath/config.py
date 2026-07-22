@@ -98,15 +98,15 @@ def get_default_opt():
     }
     optimizer_parameters = {
         # learning rate
-        "lr": 0.0003,
+        "lr": 0.0005,
         # weight decay
         "w_decay": 0.01,
         # l1 decay
-        "l1_decay": 0.01,
+        "l1_decay": 0.00,
         # maximum iteration before stopping the early stopping
         "early_stop": 2000,
         # wheter to penalize across area connections
-        "l1_decay_across": 0.001,
+        "l1_decay_across": 0.02,
         # a different way to implement sparsity (this might be better in the future)
         "iterative_pruning": False,
     }
@@ -114,9 +114,9 @@ def get_default_opt():
         #  how many neurons
         "n_units": 300,
         # how strong is the membrane potential noise, in each area
-        "noise_level_list": [0.16, 0.16, 0.16],
+        "noise_level_list": [0.16, 0.16],
         # timeconstant of membrane potential of areas in ms
-        "tau_list": [10.0, 10.0, 10.0],
+        "tau_list": [10.0, 10.0],
         # timeconstant of adaptative threshold in ms
         "tau_adaptation": 144.0,
         # name of areas
@@ -131,7 +131,7 @@ def get_default_opt():
         # start and endpoint for reaction_time limits defaults none values
         "reaction_time_limits": None,
         # which areas project to motor decoder
-        "motor_areas": [],
+        "motor_areas": ["ALM"],
         # maximum delay for neural activity to generate jaw/tongue
         "jaw_delay": 40,
         # min delay for neural activity to generate jaw/tongue
@@ -143,7 +143,7 @@ def get_default_opt():
         # propability a neuron to be adaptive
         "prop_adaptive": 0.0,
         # spike function type {"bernoulli", "deterministic"}
-        "spike_function": "bernoulli",
+        "spike_function": "wulfram",
         # train bias (offset in the v_{rest})
         "train_bias": False,
         # train bias(a multiplicative factor in the membrane noise)
@@ -158,7 +158,7 @@ def get_default_opt():
         "train_adaptation": False,
         "train_delays": False,
         # proportion of excitatory neurons
-        "p_exc": 0.9,
+        "p_exc": 0.85,
         # temperature for sigmoid in bernoulli spike function
         "temperature": 7.5,
         # if to use the MLP trial offset (this the one described in the paper)
@@ -174,7 +174,7 @@ def get_default_opt():
         # if to scale the jaw/tongue in the model
         "scaling_jaw_in_model": False,
         # percentage of exc neurons in input neurons
-        "p_exc_in": 0.85,
+        "p_exc_in": 0.9,
         # what is the initial v_{rest} values
         "v_rest": 0,
         # what is the initial threshold values
@@ -200,11 +200,11 @@ def get_default_opt():
     }
     training_parameters = {
         # how often to log
-        "log_every_n_steps": 100,
+        "log_every_n_steps": 400,
         # batch size
-        "batch_size": 50,
+        "batch_size": 200,
         # Number of training steps
-        "n_steps": 20000,
+        "n_steps": 50000,
         # how impact has the main loss to the total loss
         "coeff_loss": 1.0,
         # loss over single neuron or first averaging over population
@@ -373,7 +373,7 @@ def config_pseudodata():
     opt.lr = 0.001
     opt.p_exc = 0.8
     opt.trial_loss_area_specific = True
-    opt.geometric_loss = False
+    opt.geometric_loss = True
     opt.motor_areas = []
     opt.jaw_delay = 40
     opt.tau_jaw = 50
@@ -407,27 +407,27 @@ def config_vahid():
     opt.areas = ["ALM", "AC"]
     opt.num_areas = len(opt.areas)
     opt.stim = [0, 1]
-    opt.n_units = 1500      # 750 per area
-    opt.n_rnn_in = 600
-    opt.start, opt.stop = -0.5, 6.5
+    opt.n_units = 500      # 250 per area
+    opt.n_rnn_in = 3
+    opt.start, opt.stop = -0.2, 2.2
     opt.noise_level_list = [0.10 for i in range(len(opt.areas))]
 
     opt.prop_adaptive = 0.0
     opt.input_f0 = 5
     opt.tau_list = [10 for i in range(opt.num_areas)]
 
-    opt.dt = 4
+    opt.dt = 2
     opt.inter_delay = 4  # miliseconds
-    opt.n_delay = 4
+    opt.n_delay = 2
     opt.rec_groups = 1
 
-    opt.psth_filter = 8  # miliseconds # int(psth_filter / opt.dt)
+    opt.psth_filter = 12  # miliseconds # int(psth_filter / opt.dt)
     opt.lsnn_version = "simplified"
     opt.thalamic_delay = 0.004  # * (opt.lsnn_version != "srm")
     opt.early_stop = 8000
     opt.lr = 1e-3
-    opt.p_exc = 0.8
-    opt.p_exc_in = 1
+    opt.p_exc = 0.85
+    opt.p_exc_in = 0.9
     opt.batch_size = 150
 
     opt.loss_neuron_wise = 1
@@ -454,10 +454,10 @@ def config_vahid():
     opt.trial_loss_area_specific = True
     opt.geometric_loss = True
 
-    opt.motor_areas = [0]    # LOOK AGAIN AT THIS
-    opt.jaw_delay = 40
+    opt.motor_areas = [0]    
+    opt.jaw_delay = 16
     opt.jaw_min_delay = 12
-    opt.tau_jaw = 50
+    opt.tau_jaw = 5
     opt.jaw_version = 1
 
     opt.gan_loss = False
@@ -473,7 +473,7 @@ def config_vahid():
     opt.scaling_jaw_in_model = True
     opt.jaw_tongue = 1
     opt.jaw_nonlinear = False
-    opt.temperature = 1
+    opt.temperature = 5
     opt.v_rest = 0  # -75  #
     opt.thr = 0.1  # -50  #
     opt.trial_offset_bound = False
